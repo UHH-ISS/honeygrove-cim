@@ -1,23 +1,22 @@
 from .config import CIMConfig
 
-from elasticsearch_watcher import WatcherClient
+from elasticsearch.client.xpack.watcher import WatcherClient
 
 
 class ESWatcher():
 
-    es_istance = None
+    watcher = None
     mattermost_url = None
 
-    def __init__(es, url):
-        es_instance = es
-        mattermost_url = url
+    def __init__(self, es, url):
+        self.watcher = WatcherClient(es)
+        self.mattermost_url = url
 
 
     # Watcher alerts
     def put_watch(self):
-        WatcherClient.infect_client(self.es_instance)
         #HTTP brute force alert
-        self.es_instance.watcher.put_watch(
+        self.watcher.put_watch(
             id='brute_force_http',
             body={
                 # Run the watch every 10 seconds
@@ -61,7 +60,7 @@ class ESWatcher():
                                             'For an overview you can use the visualisations in **Kibana**.'}}}}}})
 
         # FTP brute force alert
-        self.es_instance.watcher.put_watch(
+        self.watcher.put_watch(
             id='brute_force_ftp',
             body={
                 # Run the watch every 10 seconds
@@ -105,7 +104,7 @@ class ESWatcher():
                                             'For an overview you can use the visualisations in **Kibana**.'}}}}}})
 
         # SSH brute force alert
-        self.es_instance.watcher.put_watch(
+        self.watcher.put_watch(
             id='brute_force_ssh',
             body={
                 # Run the watch every 10 seconds
@@ -149,7 +148,7 @@ class ESWatcher():
                                             'For an overview you can use the visualisations in **Kibana**.'}}}}}})
 
         # Malware alert
-        self.es_instance.watcher.put_watch(
+        self.watcher.put_watch(
             id='malware_alerts',
             body={
                 # Run the watch every 10 seconds
@@ -196,7 +195,7 @@ class ESWatcher():
                                             'For an overview you can use the visualisations in **Kibana**.'}}}}}})
 
         # honeytoken alert
-        self.es_instance.watcher.put_watch(
+        self.watcher.put_watch(
             id='honeytoken_alerts',
             body={
                 # Run the watch every 10 seconds
@@ -238,4 +237,5 @@ class ESWatcher():
                                             '**{{ctx.payload.hits.total}}** **honeytokens** was/were used in the last 10 seconds. \n'
                                             'For an overview you can use the visualisations in **Kibana**.'}}}}}})
 
+        self.watcher.start()
         print('\033[94m'+'Watcher Alerts Complete.'+'\033[0m')
