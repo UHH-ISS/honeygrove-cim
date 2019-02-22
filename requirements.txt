@@ -1,0 +1,4 @@
+twisted >= "18.9"
+cryptography >= "2.5"
+elasticsearch >= "6.3"
+elasticsearch-watcher >= "0.4"

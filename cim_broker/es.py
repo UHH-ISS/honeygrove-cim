@@ -55,7 +55,7 @@ def loadMapping(es_instance):
 
 
 # Start with mapping if Elasticsearch is reachable and cluster status is ready ("yellow")
-def readyToMap(ip, port, es_instance):
+def readyToMap(ip, port, es_instance, mattermost_url):
     try:
         if check_ping(ip, port):
             health = es_instance.cluster.health()
@@ -63,21 +63,23 @@ def readyToMap(ip, port, es_instance):
                 h = (health['status'])
                 if h == 'yellow' or h == 'green':
                     loadMapping(es_instance)
-                    print('\033[94m' + 'Mapping Complete.' + '\033[0m')
+                    print('Mapping Complete.')
 
                     # Execute Watcher alerts script
-                    print('\033[94m' + "Start Watcher Alerts..." + '\033[0m')
-                    WatcherAlerts.putWatch()
+                    print("Start Watcher Alerts...")
+                    if mattermost_url:
+                       watcher = ESWatcher(es_instance, mattermost_url)
+                       watcher.put_watch()
 
                 else:
                     print('\033[91m' + "es-master cluster state is red, trying again in 10s..." + '\033[0m')
                     # Wait 10 seconds and retry checking cluster state
                     time.sleep(10)
-                    readyToMap(ip, port, es_instance)
+                    readyToMap(ip, port, es_instance, mattermost_url)
         else:
             # Retry connection attempt every 10 seconds
             time.sleep(10)
-            readyToMap(ip, port, es_instance)
+            readyToMap(ip, port, es_instance, mattermost_url)
 
     except:
         print('\033[91m' + "an error occurred, please try again later..." + '\033[0m')
@@ -86,8 +88,8 @@ def readyToMap(ip, port, es_instance):
 
 if __name__ == '__main__':
     cfg = CIMConfig()
-    es = Elasticsearch([{'host': cfg.ElasticIP, 'port': cfg.ElasticPort}])
+    es = get_instance(cfg.ElasticIP, cfg.ElasticPort)
 
     # Start the mapping process
-    print('\033[94m'+"Start Mapping..."+'\033[0m')
-    readyToMap(cfg.ElasticIP, cfg.ElasticPort, es)
+    print("Start Mapping...")
+    readyToMap(cfg.ElasticIP, cfg.ElasticPort, es, cfg.MattermostUrl)

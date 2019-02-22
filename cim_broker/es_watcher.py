@@ -1,21 +1,23 @@
-from CIMBroker.CIMBrokerConfig import es
+from .config import CIMConfig
+
 from elasticsearch_watcher import WatcherClient
 
 
-class WatcherAlerts():
+class ESWatcher():
 
-    # add the .watcher namespace to it
-    WatcherClient.infect_client(es)
+    es_istance = None
+    mattermost_url = None
+
+    def __init__(es, url):
+        es_instance = es
+        mattermost_url = url
+
 
     # Watcher alerts
-    @staticmethod
-    def putWatch():
-
-        # Mattermost webhook url
-        url = ''
-
+    def put_watch(self):
+        WatcherClient.infect_client(self.es_instance)
         #HTTP brute force alert
-        es.watcher.put_watch(
+        self.es_instance.watcher.put_watch(
             id='brute_force_http',
             body={
                 # Run the watch every 10 seconds
@@ -49,7 +51,7 @@ class WatcherAlerts():
                     'mattermost_webhook': {
                         'webhook': {
                             'method': 'POST',
-                            'url': url,
+                            'url': self.mattermost_url,
                             'headers': {
                                 'Content-Type': 'application/json'},
                             'body': {
@@ -59,7 +61,7 @@ class WatcherAlerts():
                                             'For an overview you can use the visualisations in **Kibana**.'}}}}}})
 
         # FTP brute force alert
-        es.watcher.put_watch(
+        self.es_instance.watcher.put_watch(
             id='brute_force_ftp',
             body={
                 # Run the watch every 10 seconds
@@ -93,7 +95,7 @@ class WatcherAlerts():
                     'mattermost_webhook': {
                         'webhook': {
                             'method': 'POST',
-                            'url': url,
+                            'url': self.mattermost_url,
                             'headers': {
                                 'Content-Type': 'application/json'},
                             'body': {
@@ -103,7 +105,7 @@ class WatcherAlerts():
                                             'For an overview you can use the visualisations in **Kibana**.'}}}}}})
 
         # SSH brute force alert
-        es.watcher.put_watch(
+        self.es_instance.watcher.put_watch(
             id='brute_force_ssh',
             body={
                 # Run the watch every 10 seconds
@@ -137,7 +139,7 @@ class WatcherAlerts():
                     'mattermost_webhook': {
                         'webhook': {
                             'method': 'POST',
-                            'url': url,
+                            'url': self.mattermost_url,
                             'headers': {
                                 'Content-Type': 'application/json'},
                             'body': {
@@ -147,7 +149,7 @@ class WatcherAlerts():
                                             'For an overview you can use the visualisations in **Kibana**.'}}}}}})
 
         # Malware alert
-        es.watcher.put_watch(
+        self.es_instance.watcher.put_watch(
             id='malware_alerts',
             body={
                 # Run the watch every 10 seconds
@@ -184,7 +186,7 @@ class WatcherAlerts():
                     'mattermost_webhook': {
                         'webhook': {
                             'method': 'POST',
-                            'url': url,
+                            'url': self.mattermost_url,
                             'headers': {
                                 'Content-Type': 'application/json'},
                             'body': {
@@ -194,7 +196,7 @@ class WatcherAlerts():
                                             'For an overview you can use the visualisations in **Kibana**.'}}}}}})
 
         # honeytoken alert
-        es.watcher.put_watch(
+        self.es_instance.watcher.put_watch(
             id='honeytoken_alerts',
             body={
                 # Run the watch every 10 seconds
@@ -227,7 +229,7 @@ class WatcherAlerts():
                     'mattermost_webhook': {
                         'webhook': {
                             'method': 'POST',
-                            'url': url,
+                            'url': self.mattermost_url,
                             'headers': {
                                 'Content-Type': 'application/json'},
                             'body': {
@@ -237,7 +239,3 @@ class WatcherAlerts():
                                             'For an overview you can use the visualisations in **Kibana**.'}}}}}})
 
         print('\033[94m'+'Watcher Alerts Complete.'+'\033[0m')
-
-if __name__ == '__main__':
-
-    WatcherAlerts.putWatch()
