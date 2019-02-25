@@ -4,6 +4,8 @@ from .malware import check_file_for_malware
 import base64
 from datetime import datetime
 import json
+import os
+import select
 
 import broker
 
@@ -29,57 +31,62 @@ class CIMEndpoint:
     def listen(self):
         self.endpoint.listen(self.config.BrokerIP, self.config.BrokerPort)
 
-        print("listening at {}:{}".format(self.config.BrokerIP, self.config.BrokerPort))
-        while True:
-            logs = self.log_queue.poll()
-            files = self.file_queue.poll()
+        print("Listening at {}:{}".format(self.config.BrokerIP, self.config.BrokerPort))
+        fds = [self.log_queue.fd(), self.file_queue.fd()]
 
-            self.process_logs(logs)
-            self.process_files(files)
+        while True:
+            result = select.select(fds, [], [])
+
+            # Might not be the best way, but it's fine for our 2 fds
+            if fds[0] in result[0]:
+                logs = self.log_queue.poll()
+                self.process_logs(logs)
+
+            if fds[1] in result[0]:
+                files = self.file_queue.poll()
+                self.process_files(files)
 
 
     def process_files(self, files):
-        """
-        receives malwarefiles over the "filesQueue" messagetopic
-        and saves them with consecutive timestamps
-
-        :param: files
-        """
-        timestamp = datetime.utcnow().isoformat()
-        for msg in files:
-            for m in msg:
-                with open('./ressources/%s.file' % timestamp, 'wb') as afile:
-                    afile.write(base64.b64decode(str(m))) 
-            check_file_for_malware(m)
+        for (topic, data) in files:
+            # Do this to accept both lists and single values
+            data = _flatten([data])
+            for f in data:
+                filename = '{}.file'.format(datetime.utcnow().isoformat())
+                path = os.path.join(self.config.MalwarePath, filename)
+                with open(path, 'wb') as fp:
+                    fp.write(base64.b64decode(str(f)))
+                check_file_for_malware(path, self.es_instance)
 
 
     def process_logs(self, logs):
-        """
-        receives logfiles over the "logsQueue" messagetopic
-        and saves them in a JSON-file
+        with open(self.config.LogPath, 'a') as fp:
+            for (topic, data) in logs:
+                # Do this to accept both lists and single values
+                data = _flatten([data])
+                for entry in data:
+                    if check_ping(self.config.ElasticIP, self.config.ElasticPort):
+                        try:
+                            output_logs = json.loads(str(entry))
+                            # send logs into Elasticsearch
+                            month = datetime.utcnow().strftime("%Y-%m")
+                            indexname = "honeygrove-" + month
+                            self.es_instance.index(index=indexname, doc_type="log_event", body=output_logs)
 
-        :param logs:
-        """
+                        except Exception:
+                            # XXX: Improve this
+                            pass
+                    else:
+                        # if connection to Elasticsearch is interrupted, cache logs to prevent data loss
+                        print("The logs will be saved at {}".format(self.config.LogPath))
+                        fp.write(str(entry))
+                        fp.write('\n')
 
-        for (topic, data) in logs:
-            for entry in [data]:
-                print("Log: ", entry)
 
-                # if connection to Elasticsearch is interrupted, cache logs into logs.json to prevent data loss.
-                if not check_ping(self.config.ElasticIP, self.config.ElasticPort):
-                    print('\033[91m' + "The logs will be saved in the logs.json under "
-                                       "/incidentmonitoring/ressources." + '\033[0m')
-                    with open('./incidentmonitoring/ressources/logs.json', 'a') as outfile:
-                        outfile.write(str(entry))
-                        outfile.write('\n')
-
-                else:
-                    try:
-                        output_logs = json.loads(str(entry))
-                        # send logs into Elasticsearch
-                        month = datetime.utcnow().strftime("%Y-%m")
-                        indexname = "honeygrove-" + month
-                        self.es_instance.index(index=indexname, doc_type="log_event", body=output_logs)
-
-                    except Exception:
-                        pass
+def _flatten(items):
+    for x in items:
+        if hasattr(x, '__iter__') and not isinstance(x, str):
+            for y in _flatten(x):
+                yield y
+        else:
+            yield x

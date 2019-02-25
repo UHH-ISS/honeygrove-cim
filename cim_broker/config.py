@@ -6,3 +6,6 @@ class CIMConfig:
     ElasticPort = 9200
 
     MattermostUrl = ""
+
+    LogPath = "/var/cim/logs.json"
+    MalwarePath = "/var/cim/uploads"
