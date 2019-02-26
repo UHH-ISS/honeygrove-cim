@@ -1,9 +1,12 @@
 from .config import CIMConfig
+from .es_watcher import ESWatcher
 
 import json
 import socket
+import time
 
 from elasticsearch import Elasticsearch
+
 
 # Check if Elasticsearch on port 9200 is reachable
 def check_ping(ip, port):
@@ -16,8 +19,10 @@ def check_ping(ip, port):
         print('\033[91m' + "The connection to Elasticsearch is interrupted..." + '\033[0m')
     return pingstatus
 
+
 def get_instance(ip, port):
     return Elasticsearch([{'host': ip, 'port': port}])
+
 
 # Define the mapping and load it into the Elasticsearch index
 def loadMapping(es_instance):
@@ -68,8 +73,8 @@ def readyToMap(ip, port, es_instance, mattermost_url):
                     # Execute Watcher alerts script
                     print("Start Watcher Alerts...")
                     if mattermost_url:
-                       watcher = ESWatcher(es_instance, mattermost_url)
-                       watcher.put_watch()
+                        watcher = ESWatcher(es_instance, mattermost_url)
+                        watcher.put_watch()
 
                 else:
                     print('\033[91m' + "es-master cluster state is red, trying again in 10s..." + '\033[0m')
@@ -81,7 +86,7 @@ def readyToMap(ip, port, es_instance, mattermost_url):
             time.sleep(10)
             readyToMap(ip, port, es_instance, mattermost_url)
 
-    except:
+    except Exception:
         print('\033[91m' + "an error occurred, please try again later..." + '\033[0m')
         print('\033[91m' + "aborting..." + '\033[0m')
 

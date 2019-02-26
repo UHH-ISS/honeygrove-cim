@@ -9,6 +9,7 @@ import select
 
 import broker
 
+
 class CIMEndpoint:
     config = None
     endpoint = None
@@ -26,7 +27,6 @@ class CIMEndpoint:
         self.file_queue = self.endpoint.make_subscriber("files")
 
         self.es_instance = get_instance(self.config.ElasticIP, self.config.ElasticPort)
-
 
     def listen(self):
         self.endpoint.listen(self.config.BrokerIP, self.config.BrokerPort)
@@ -46,7 +46,6 @@ class CIMEndpoint:
                 files = self.file_queue.poll()
                 self.process_files(files)
 
-
     def process_files(self, files):
         for (topic, data) in files:
             # Do this to accept both lists and single values
@@ -57,7 +56,6 @@ class CIMEndpoint:
                 with open(path, 'wb') as fp:
                     fp.write(base64.b64decode(str(f)))
                 check_file_for_malware(path, self.es_instance)
-
 
     def process_logs(self, logs):
         with open(self.config.LogPath, 'a') as fp:

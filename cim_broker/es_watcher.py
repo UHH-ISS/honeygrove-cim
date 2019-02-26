@@ -12,10 +12,9 @@ class ESWatcher():
         self.watcher = WatcherClient(es)
         self.mattermost_url = url
 
-
     # Watcher alerts
     def put_watch(self):
-        #HTTP brute force alert
+        # HTTP brute force alert
         self.watcher.put_watch(
             id='brute_force_http',
             body={
