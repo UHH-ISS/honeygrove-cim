@@ -7,5 +7,5 @@ class CIMConfig:
 
     MattermostUrl = ""
 
-    LogPath = "/var/cim/logs.json"
-    MalwarePath = "/var/cim/uploads"
+    LogPath = "/var/honeygrove/cim/logs.json"
+    MalwarePath = "/var/honeygrove/cim/uploads"
