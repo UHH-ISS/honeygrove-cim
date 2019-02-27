@@ -1,5 +1,5 @@
-from .es import check_ping, get_instance
-from .malware import check_file_for_malware
+from cim_broker.es import check_ping, get_instance
+from cim_broker.malware import check_file_for_malware
 
 import base64
 from datetime import datetime

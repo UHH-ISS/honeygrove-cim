@@ -1,5 +1,3 @@
-from .config import CIMConfig
-
 from elasticsearch.client.xpack.watcher import WatcherClient
 
 

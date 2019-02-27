@@ -1,5 +1,5 @@
-from .config import CIMConfig
-from .es_watcher import ESWatcher
+from cim_broker.config import CIMConfig
+from cim_broker.es_watcher import ESWatcher
 
 import json
 import socket
