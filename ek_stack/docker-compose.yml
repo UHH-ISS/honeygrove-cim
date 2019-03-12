@@ -2,7 +2,7 @@ version: '2'
 
 services:
   es-master:
-    build: elasticsearch/
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.2.2
     ports:
       - "127.0.0.1:9200:9200"
     expose:
@@ -18,9 +18,10 @@ services:
       discovery.zen.minimum_master_nodes: 1
       xpack.security.enabled: "false"
     networks:
-      - docker_elk
+      - net
+
   es-data-1:
-    build: elasticsearch/
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.2.2
     expose:
       - "9200"
       - "9300"
@@ -34,15 +35,16 @@ services:
       discovery.zen.minimum_master_nodes: 1
       xpack.security.enabled: "false"
     networks:
-      - docker_elk
-    links:
-      - es-master:es-master
+      - net
+    volumes:
+      - es-data-1:/usr/share/elasticsearch/data
     depends_on:
       - es-master
-    volumes:
-      - /var/honeygrove/cim-data/data-1:/usr/share/elasticsearch/data
+    links:
+      - es-master:es-master
+
   es-data-2:
-    build: elasticsearch/
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.2.2
     expose:
       - "9200"
       - "9300"
@@ -56,26 +58,31 @@ services:
       discovery.zen.minimum_master_nodes: 1
       xpack.security.enabled: "false"
     networks:
-      - docker_elk
+      - net
     volumes:
-      - /var/honeygrove/cim-data/data-2:/usr/share/elasticsearch/data
+      - es-data-2:/usr/share/elasticsearch/data
     links:
       - es-master:es-master
     depends_on:
       - es-master
+
   kibana:
-    build: kibana/
+    image: docker.elastic.co/kibana/kibana:6.2.2
     ports:
       - "127.0.0.1:5601:5601"
     environment:
       xpack.security.enabled: "false"
     networks:
-      - docker_elk
+      - net
     depends_on:
       - es-master
     links:
       - es-master:elasticsearch
 
 networks:
-  docker_elk:
+  net:
     driver: bridge
+
+volumes:
+  es-data-1: {}
+  es-data-2: {}

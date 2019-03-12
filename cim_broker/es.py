@@ -24,8 +24,7 @@ def get_instance(ip, port):
     return Elasticsearch([{'host': ip, 'port': port}])
 
 
-# Define the mapping and load it into the Elasticsearch index
-def loadMapping(es_instance):
+def set_template(es_instance):
     mapping = '''{
         "index_patterns": "honeygrove-*",
         "mappings": {
@@ -57,22 +56,24 @@ def loadMapping(es_instance):
 
     # Create a template with the mapping that is applied to all indices starting with "honeygrove-"
     es_instance.indices.put_template(name='log_event', body=json.loads(mapping))
+    t = es_instance.indices.get_template('log_event')
+    print("Successfully added index template:\n", t)
 
 
 # Start with mapping if Elasticsearch is reachable and cluster status is ready ("yellow")
-def readyToMap(ip, port, es_instance, mattermost_url):
+def prepare_elasticsearch(ip, port, es_instance, mattermost_url):
     try:
         if check_ping(ip, port):
             health = es_instance.cluster.health()
             if 'status' in health:
                 h = (health['status'])
                 if h == 'yellow' or h == 'green':
-                    loadMapping(es_instance)
-                    print('Mapping Complete.')
+                    print("Add index template...")
+                    set_template(es_instance)
 
-                    # Execute Watcher alerts script
-                    print("Start Watcher Alerts...")
                     if mattermost_url:
+                        # Execute Watcher alerts script
+                        print("Start Watcher Alerts...")
                         watcher = ESWatcher(es_instance, mattermost_url)
                         watcher.put_watch()
 
@@ -80,11 +81,11 @@ def readyToMap(ip, port, es_instance, mattermost_url):
                     print('\033[91m' + "es-master cluster state is red, trying again in 10s..." + '\033[0m')
                     # Wait 10 seconds and retry checking cluster state
                     time.sleep(10)
-                    readyToMap(ip, port, es_instance, mattermost_url)
+                    prepare_elasticsearch(ip, port, es_instance, mattermost_url)
         else:
             # Retry connection attempt every 10 seconds
             time.sleep(10)
-            readyToMap(ip, port, es_instance, mattermost_url)
+            prepare_elasticsearch(ip, port, es_instance, mattermost_url)
 
     except Exception:
         print('\033[91m' + "an error occurred, please try again later..." + '\033[0m')
@@ -96,5 +97,4 @@ if __name__ == '__main__':
     es = get_instance(cfg.ElasticIP, cfg.ElasticPort)
 
     # Start the mapping process
-    print("Start Mapping...")
-    readyToMap(cfg.ElasticIP, cfg.ElasticPort, es, cfg.MattermostUrl)
+    prepare_elasticsearch(cfg.ElasticIP, cfg.ElasticPort, es, cfg.MattermostUrl)
