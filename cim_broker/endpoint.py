@@ -22,27 +22,62 @@ class CIMEndpoint:
     def __init__(self, cfg):
         self.config = cfg
         self.endpoint = broker.Endpoint()
-
+        
+        # Status Subscriber
+        self.status_queue = self.endpoint.make_status_subscriber(True)
+        # Message Subscribers
         self.log_queue = self.endpoint.make_subscriber("logs")
         self.file_queue = self.endpoint.make_subscriber("files")
 
         self.es_instance = get_instance(self.config.ElasticIP, self.config.ElasticPort)
 
     def listen(self):
-        self.endpoint.listen(self.config.BrokerIP, self.config.BrokerPort)
+        port = self.endpoint.listen(self.config.BrokerIP, self.config.BrokerPort)
+        if port == 0:
+            raise RuntimeError("Unable to listen on Broker port {}".format(self.config.BrokerPort))
 
-        print("Listening at {}:{}".format(self.config.BrokerIP, self.config.BrokerPort))
-        fds = [self.log_queue.fd(), self.file_queue.fd()]
+        print("Listening at {}:{}".format(self.config.BrokerIP, port))
+        fds = [self.status_queue.fd()]
 
         while True:
+            # Wait for something to do
             result = select.select(fds, [], [])
-
-            # Might not be the best way, but it's fine for our 2 fds
-            if fds[0] in result[0]:
+            
+            # - Status
+            if self.status_queue.fd() in result[0]:
+                changed = False
+                for st in self.status_queue.poll():
+                    # Error
+                    if type(st) == broker.Error:
+                        print("[Broker Error] {}". format(st))
+                    # Status
+                    elif type(st) == broker.Status:
+                        print("[Broker Status] {}". format(st))
+                        changed = True
+                        # became connected:
+                        if st.code() == broker.SC.PeerAdded:
+                            if self.log_queue.fd() not in fds:
+                                fds.append(self.log_queue.fd())
+                            if self.file_queue.fd() not in fds:
+                                fds.append(self.file_queue.fd())
+                        # became disconnected:
+                        else:
+                            if self.log_queue in fds:
+                                fds.remove(self.log_queue.fd())
+                            if self.file_queue in fds:
+                                fds.remove(self.file_queue.fd())
+                    else:
+                        raise RuntimeError("Unknown Broker Status Type")
+                # Apply new fds
+                if changed: continue
+                    
+            # - Log
+            if self.log_queue.fd()  in result[0]:
                 logs = self.log_queue.poll()
                 self.process_logs(logs)
-
-            if fds[1] in result[0]:
+            
+            # - File
+            if self.file_queue.fd() in result[0]:
                 files = self.file_queue.poll()
                 self.process_files(files)
 
