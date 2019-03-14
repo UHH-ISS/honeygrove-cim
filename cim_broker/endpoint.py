@@ -21,8 +21,20 @@ class CIMEndpoint:
 
     def __init__(self, cfg):
         self.config = cfg
-        self.endpoint = broker.Endpoint()
         
+        # Broker Configuration
+        bcfg = broker.Configuration()
+        # - SSL
+        if cfg.BrokerSSLCAFile:
+            bcfg.openssl_cafile = cfg.BrokerSSLCAFile # Path to CA file
+        if cfg.BrokerSSLCAPath:
+            bcfg.openssl_capath = cfg.BrokerSSLCAPath # Path to directory with CA files
+        if cfg.BrokerSSLCertificate:
+            bcfg.openssl_certificate = cfg.BrokerSSLCertificate # Own certificate
+        if cfg.BrokerSSLKeyFile:
+            bcfg.openssl_key = cfg.BrokerSSLKeyFile # Own key
+        
+        self.endpoint = broker.Endpoint(bcfg)
         # Status Subscriber
         self.status_queue = self.endpoint.make_status_subscriber(True)
         # Message Subscribers
