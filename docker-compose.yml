@@ -1,0 +1,81 @@
+version: '2'
+
+services:
+  adapter:
+    image: uhhiss/honeygrove-cim:latest
+    container_name: cim_adapter
+    ports:
+      - "127.0.0.1:34445:34445"
+    networks:
+      - net
+    depends_on:
+      - es-master
+    links:
+      - es-master:elasticsearch
+
+  es-master:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
+    container_name: cim_es-master
+    environment:
+      ES_JAVA_OPTS: "-Xms250m -Xmx250m"
+      # Configure as master-only node
+      node.master: "true"
+      node.data: "false"
+      node.ml: "false"
+      # Cluster settings
+      node.name: "cim-master"
+      cluster.name: "honeygrove-cim"
+      cluster.initial_master_nodes: "cim-master"
+      discovery.seed_hosts: "es-master"
+      # Misc settings
+      action.auto_create_index: "true"
+      xpack.security.enabled: "false"
+    networks:
+      - net
+
+  es-data:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
+    container_name: cim_es-data
+    environment:
+      ES_JAVA_OPTS: "-Xms2g -Xmx2g"
+      # Configure as data-only node
+      node.master: "false"
+      node.data: "true"
+      node.ml: "true"
+      # Cluster settings
+      node.name: "cim-data"
+      cluster.name: "honeygrove-cim"
+      cluster.initial_master_nodes: "cim-master"
+      discovery.seed_hosts: "es-master"
+      # Misc settings
+      action.auto_create_index: "true"
+      xpack.security.enabled: "false"
+    networks:
+      - net
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    depends_on:
+      - es-master
+    links:
+      - es-master:es-master
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.2.0
+    container_name: cim_kibana
+    ports:
+      - "127.0.0.1:5601:5601"
+    environment:
+      xpack.security.enabled: "false"
+    networks:
+      - net
+    depends_on:
+      - es-master
+    links:
+      - es-master:elasticsearch
+
+networks:
+  net:
+    driver: bridge
+
+volumes:
+  es-data: {}
