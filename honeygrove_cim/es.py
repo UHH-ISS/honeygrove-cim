@@ -9,14 +9,15 @@ from elasticsearch import Elasticsearch
 
 
 # Check if Elasticsearch on port 9200 is reachable
-def check_ping(ip, port):
+def check_ping(ip, port, print_status=True):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     result = sock.connect_ex((ip, port))
     if result == 0:
         pingstatus = True
     else:
         pingstatus = False
-        print('\033[91m' + "The connection to Elasticsearch is interrupted..." + '\033[0m')
+        if print_status:
+            print('\033[91m' + "The connection to Elasticsearch is interrupted..." + '\033[0m')
     return pingstatus
 
 

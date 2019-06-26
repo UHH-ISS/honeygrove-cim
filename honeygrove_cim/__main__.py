@@ -5,6 +5,7 @@ from honeygrove_cim.endpoint import Endpoint
 def main():
     cfg = Config()
     ep = Endpoint(cfg)
+    ep.ensure_elastic()
     ep.listen()
 
 

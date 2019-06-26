@@ -9,8 +9,11 @@ COPY requirements.txt /app
 RUN echo "===> Installing python dependencies via pip..." \
     && pip3 install -r requirements.txt
 
-RUN echo "===>  Copying honeygrove sources..."
+RUN echo "===>  Copying honeygrove-cim sources..."
 COPY honeygrove_cim /app/honeygrove_cim
+
+RUN echo "===>  Copying honeygrove-cim docker configuration..."
+COPY docker/config.py /app/honeygrove_cim/config.py
 
 VOLUME ["/var/honeygrove/cim"]
 

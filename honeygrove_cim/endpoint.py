@@ -6,6 +6,8 @@ from datetime import datetime
 import json
 import os
 import select
+from time import sleep
+from sys import stdout
 
 import broker
 
@@ -43,15 +45,25 @@ class Endpoint:
 
         self.es_instance = get_instance(self.config.ElasticIP, self.config.ElasticPort)
 
+    def ensure_elastic(self):
+        ip = self.config.ElasticIP
+        port = self.config.ElasticPort
+        print("[Endpoint] Waiting for Elasticsearch to come online at {}:{}..".format(ip, port), flush=True)
+        while not check_ping(self.config.ElasticIP, self.config.ElasticPort, print_status=False):
+            sleep(1)
+        print("[Endpoint] Elasticseach found at {}:{}".format(ip, port), flush=True)
+
     def listen(self):
         port = self.endpoint.listen(self.config.BrokerIP, self.config.BrokerPort)
         if port == 0:
             raise RuntimeError("Unable to listen on Broker port {}".format(self.config.BrokerPort))
 
-        print("Listening at {}:{}".format(self.config.BrokerIP, port))
+        print("[Endpoint] Listening on {}:{}".format(self.config.BrokerIP, port))
         fds = [self.status_queue.fd()]
 
         while True:
+            stdout.flush()
+
             # Wait for something to do
             result = select.select(fds, [], [])
 
@@ -81,10 +93,11 @@ class Endpoint:
                     else:
                         raise RuntimeError("Unknown Broker Status Type")
                 # Apply new fds
-                if changed: continue
+                if changed:
+                    continue
 
             # - Log
-            if self.log_queue.fd()  in result[0]:
+            if self.log_queue.fd() in result[0]:
                 logs = self.log_queue.poll()
                 self.process_logs(logs)
 
@@ -123,7 +136,7 @@ class Endpoint:
                             pass
                     else:
                         # if connection to Elasticsearch is interrupted, cache logs to prevent data loss
-                        print("The logs will be saved at {}".format(self.config.LogPath))
+                        print("[Endpoint] The logs will be saved at {}".format(self.config.LogPath))
                         fp.write(str(entry))
                         fp.write('\n')
 
