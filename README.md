@@ -23,11 +23,11 @@
   ```
 * Edit the configuration file to fit your needs
   ```shell
-  $ $EDITOR cim_broker/config.py
+  $ $EDITOR honeygrove_cim/config.py
   ```
 * Start the CIM endpoint and verify everything works as expected
   ```shell
-  $ ./run_cim_endpoint.sh
+  $ ./honeygrove-cim.sh
   ```
 
 ## Contributors

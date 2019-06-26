@@ -1,5 +1,5 @@
-from cim_broker.config import CIMConfig
-from cim_broker.es_watcher import ESWatcher
+from honeygrove_cim.config import Config
+from honeygrove_cim.es_watcher import ESWatcher
 
 import json
 import socket
@@ -93,7 +93,7 @@ def prepare_elasticsearch(ip, port, es_instance, mattermost_url):
 
 
 if __name__ == '__main__':
-    cfg = CIMConfig()
+    cfg = Config()
     es = get_instance(cfg.ElasticIP, cfg.ElasticPort)
 
     # Start the mapping process

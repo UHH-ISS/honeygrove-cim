@@ -1,1 +1,1 @@
-elasticsearch >= "6.3"
+elasticsearch >= "7.2"

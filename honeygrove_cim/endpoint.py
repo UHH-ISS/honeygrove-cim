@@ -1,5 +1,5 @@
-from cim_broker.es import check_ping, get_instance
-from cim_broker.malware import check_file_for_malware
+from honeygrove_cim.es import check_ping, get_instance
+from honeygrove_cim.malware import check_file_for_malware
 
 import base64
 from datetime import datetime
@@ -10,7 +10,7 @@ import select
 import broker
 
 
-class CIMEndpoint:
+class Endpoint:
     config = None
     endpoint = None
 
@@ -21,7 +21,7 @@ class CIMEndpoint:
 
     def __init__(self, cfg):
         self.config = cfg
-        
+
         # Broker Configuration
         bcfg = broker.Configuration()
         # - SSL
@@ -33,7 +33,7 @@ class CIMEndpoint:
             bcfg.openssl_certificate = cfg.BrokerSSLCertificate # Own certificate
         if cfg.BrokerSSLKeyFile:
             bcfg.openssl_key = cfg.BrokerSSLKeyFile # Own key
-        
+
         self.endpoint = broker.Endpoint(bcfg)
         # Status Subscriber
         self.status_queue = self.endpoint.make_status_subscriber(True)
@@ -54,7 +54,7 @@ class CIMEndpoint:
         while True:
             # Wait for something to do
             result = select.select(fds, [], [])
-            
+
             # - Status
             if self.status_queue.fd() in result[0]:
                 changed = False
@@ -82,12 +82,12 @@ class CIMEndpoint:
                         raise RuntimeError("Unknown Broker Status Type")
                 # Apply new fds
                 if changed: continue
-                    
+
             # - Log
             if self.log_queue.fd()  in result[0]:
                 logs = self.log_queue.poll()
                 self.process_logs(logs)
-            
+
             # - File
             if self.file_queue.fd() in result[0]:
                 files = self.file_queue.poll()
