@@ -128,10 +128,11 @@ class Endpoint:
                         # send logs into Elasticsearch
                         month = datetime.utcnow().strftime("%Y-%m")
                         indexname = "honeygrove-" + month
-                        self.es_instance.create(index=indexname, body=document)
+                        self.es_instance.index(index=indexname, body=document)
 
-                    except Exception:
+                    except Exception as ex:
                         # XXX: Improve this
+                        print("Exception encountered while adding log to elasticsearch: ", ex, flush=True)
                         pass
                 else:
                     with open(self.config.LogPath, 'a') as fp:
