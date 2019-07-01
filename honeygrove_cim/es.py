@@ -29,35 +29,33 @@ def set_template(es_instance):
     mapping = '''{
         "index_patterns": "honeygrove-*",
         "mappings": {
-            "log_event": {
-                "properties": {
-                    "event_type": {"type": "keyword"},
-                    "@timestamp": {"type": "date", "format": "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"},
-                    "actual": {"type": "keyword"},
-                    "filename": {"type": "keyword"},
-                    "found_date": {"type": "date", "format": "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"},
-                    "hash": {"type": "keyword"},
-                    "honeypotID": {"type": "keyword"},
-                    "infolink": {"type": "keyword"},
-                    "ip": {"type": "ip"},
-                    "key": {"type": "keyword"},
-                    "percent": {"type": "integer"},
-                    "port": {"type": "keyword"},
-                    "request": {"type": "keyword"},
-                    "request_type": {"type": "keyword"},
-                    "response": {"type": "keyword"},
-                    "service": {"type": "keyword"},
-                    "successful": {"type": "keyword"},
-                    "user": {"type": "keyword"},
-                    "coordinates": {"type": "geo_point"}
-                }
+            "properties": {
+                "event_type": {"type": "keyword"},
+                "@timestamp": {"type": "date", "format": "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"},
+                "actual": {"type": "keyword"},
+                "filename": {"type": "keyword"},
+                "found_date": {"type": "date", "format": "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"},
+                "hash": {"type": "keyword"},
+                "honeypotID": {"type": "keyword"},
+                "infolink": {"type": "keyword"},
+                "ip": {"type": "ip"},
+                "key": {"type": "keyword"},
+                "percent": {"type": "integer"},
+                "port": {"type": "keyword"},
+                "request": {"type": "keyword"},
+                "request_type": {"type": "keyword"},
+                "response": {"type": "keyword"},
+                "service": {"type": "keyword"},
+                "successful": {"type": "keyword"},
+                "user": {"type": "keyword"},
+                "coordinates": {"type": "geo_point"}
             }
         }
     }'''
 
     # Create a template with the mapping that is applied to all indices starting with "honeygrove-"
-    es_instance.indices.put_template(name='log_event', body=json.loads(mapping))
-    t = es_instance.indices.get_template('log_event')
+    es_instance.indices.put_template(name='honeygrove', body=json.loads(mapping))
+    t = es_instance.indices.get_template('honeygrove')
     print("Successfully added index template:\n", t)
 
 

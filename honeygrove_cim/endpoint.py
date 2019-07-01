@@ -118,23 +118,23 @@ class Endpoint:
                 check_file_for_malware(path, self.es_instance)
 
     def process_logs(self, logs):
-        with open(self.config.LogPath, 'a') as fp:
-            for (topic, data) in logs:
-                # Do this to accept both lists and single values
-                data = _flatten([data])
-                for entry in data:
-                    if check_ping(self.config.ElasticIP, self.config.ElasticPort):
-                        try:
-                            output_logs = json.loads(str(entry))
-                            # send logs into Elasticsearch
-                            month = datetime.utcnow().strftime("%Y-%m")
-                            indexname = "honeygrove-" + month
-                            self.es_instance.index(index=indexname, doc_type="log_event", body=output_logs)
+        for (topic, data) in logs:
+            # Do this to accept both lists and single values
+            data = _flatten([data])
+            for entry in data:
+                if check_ping(self.config.ElasticIP, self.config.ElasticPort):
+                    try:
+                        document = json.loads(str(entry))
+                        # send logs into Elasticsearch
+                        month = datetime.utcnow().strftime("%Y-%m")
+                        indexname = "honeygrove-" + month
+                        self.es_instance.create(index=indexname, body=document)
 
-                        except Exception:
-                            # XXX: Improve this
-                            pass
-                    else:
+                    except Exception:
+                        # XXX: Improve this
+                        pass
+                else:
+                    with open(self.config.LogPath, 'a') as fp:
                         # if connection to Elasticsearch is interrupted, cache logs to prevent data loss
                         print("[Endpoint] The logs will be saved at {}".format(self.config.LogPath))
                         fp.write(str(entry))
