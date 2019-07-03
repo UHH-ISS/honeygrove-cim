@@ -2,7 +2,7 @@ version: '2'
 
 services:
   adapter:
-    image: uhhiss/honeygrove-cim:latest
+    image: uhhiss/honeygrove-adapter:latest
     container_name: cim_adapter
     ports:
       - "127.0.0.1:34445:34445"
