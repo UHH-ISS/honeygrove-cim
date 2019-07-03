@@ -1,11 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ "$(id -u)" != "0" ]; then
    echo "[ERR] Starting the honeygrove CIM requires root permissions"
    exit 1
 fi
 
-set -eox pipefail
+set -eo pipefail
 
 echo "[1] Rising the maximum memory that virtual machines are allowed to map.."
 sysctl -w vm.max_map_count=262144
