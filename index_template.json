@@ -1,0 +1,174 @@
+{
+  "index_patterns": "honeygrove-*",
+  "mappings": {
+    "_meta": {
+      "version": "0.4.0"
+    },
+    "date_detection": false,
+    "properties": {
+      "@timestamp": {
+        "type": "date",
+        "format": "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
+      },
+      "service": {
+        "properties": {
+          "id": {
+            "ignore_above": 1024,
+            "type": "keyword"
+          },
+          "name": {
+            "ignore_above": 1024,
+            "type": "keyword"
+          },
+          "type": {
+            "ignore_above": 1024,
+            "type": "keyword"
+          },
+          "version": {
+            "ignore_above": 1024,
+            "type": "keyword"
+          }
+        }
+      },
+      "event": {
+        "properties": {
+          "action": {
+            "ignore_above": 1024,
+            "type": "keyword"
+          },
+          "category": {
+            "ignore_above": 1024,
+            "type": "keyword"
+          },
+          "code": {
+            "ignore_above": 1024,
+            "type": "keyword"
+          },
+          "dataset": {
+            "ignore_above": 1024,
+            "type": "keyword"
+          },
+          "kind": {
+            "ignore_above": 1024,
+            "type": "keyword"
+          },
+          "module": {
+            "ignore_above": 1024,
+            "type": "keyword"
+          },
+          "original": {
+            "doc_values": false,
+            "ignore_above": 1024,
+            "index": false,
+            "type": "keyword"
+          },
+          "severity": {
+            "type": "long"
+          },
+          "type": {
+            "ignore_above": 1024,
+            "type": "keyword"
+          }
+        }
+      },
+      "source": {
+        "properties": {
+          "address": {
+            "ignore_above": 1024,
+            "type": "keyword"
+          },
+          "domain": {
+            "ignore_above": 1024,
+            "type": "keyword"
+          },
+          "geo": {
+            "properties": {
+              "location": {
+                "type": "geo_point"
+              }
+            }
+          },
+          "ip": {
+            "type": "ip"
+          },
+          "port": {
+            "type": "long"
+          }
+        }
+      },
+      "destination": {
+        "properties": {
+          "address": {
+            "ignore_above": 1024,
+            "type": "keyword"
+          },
+          "domain": {
+            "ignore_above": 1024,
+            "type": "keyword"
+          },
+          "geo": {
+            "properties": {
+              "location": {
+                "type": "geo_point"
+              }
+            }
+          },
+          "ip": {
+            "type": "ip"
+          },
+          "port": {
+            "type": "long"
+          }
+        }
+      },
+      "honeygrove": {
+        "properties": {
+          "login": {
+            "properties": {
+              "service": {
+                "ignore_above": 58,
+                "type": "keyword"
+              },
+              "username": {
+                "ignore_above": 1024,
+                "type": "keyword"
+              },
+              "password": {
+                "ignore_above": 1024,
+                "type": "keyword"
+              },
+              "key": {
+                "ignore_above": 1024,
+                "type": "keyword"
+              },
+              "successful": {
+                "type": "bool"
+              }
+            }
+          }
+        }
+      },
+      "filename": {
+        "type": "keyword"
+      },
+      "hash": {
+        "type": "keyword"
+      },
+      "infolink": {
+        "type": "keyword"
+      },
+      "percent": {
+        "type": "integer"
+      },
+      "request": {
+        "type": "keyword"
+      },
+      "request_type": {
+        "type": "keyword"
+      },
+      "response": {
+        "type": "keyword"
+      }
+    }
+  }
+}

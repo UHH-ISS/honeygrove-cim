@@ -1,5 +1,12 @@
 #!/bin/bash
 
-echo "Create index template and start Mattermost watcher alerts if enabled"
-cd "$(dirname "$0")"
-python3 -m honeygrove_adapter.es "$@"
+function docker-ip() {
+  docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $1
+}
+
+ELASTIC_IP=$(docker-ip "cim_es-master")
+
+echo "Creating index template for elasticsearch instance@${ELASTIC_IP}:9200"
+
+curl -XPOST "${ELASTIC_IP}:9200/_template/honeygrove" --header "Content-Type: application/json" \
+    -d @"index_template.json"
