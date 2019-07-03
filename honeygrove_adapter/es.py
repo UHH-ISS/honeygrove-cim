@@ -1,5 +1,5 @@
-from honeygrove_cim.config import Config
-from honeygrove_cim.es_watcher import ESWatcher
+from honeygrove_adapter.config import Config
+from honeygrove_adapter.es_watcher import ESWatcher
 
 import json
 import socket

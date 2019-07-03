@@ -23,7 +23,7 @@
   ```
 * Edit the configuration file to fit your needs
   ```shell
-  $ $EDITOR honeygrove_cim/config.py
+  $ $EDITOR honeygrove_adapter/config.py
   ```
 * Start the CIM endpoint and verify everything works as expected
   ```shell

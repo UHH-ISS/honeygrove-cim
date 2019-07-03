@@ -1,5 +1,5 @@
-from honeygrove_cim.config import Config
-from honeygrove_cim.endpoint import Endpoint
+from honeygrove_adapter.config import Config
+from honeygrove_adapter.endpoint import Endpoint
 
 
 def main():

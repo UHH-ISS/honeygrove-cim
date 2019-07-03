@@ -1,5 +1,5 @@
-from honeygrove_cim.es import check_ping, get_instance
-from honeygrove_cim.malware import check_file_for_malware
+from honeygrove_adapter.es import check_ping, get_instance
+from honeygrove_adapter.malware import check_file_for_malware
 
 import base64
 from datetime import datetime
@@ -122,7 +122,7 @@ class Endpoint:
         # Loop through broker messages
         for (topic, data) in logs:
             # Loop through message dictionary
-            for index, jdocument in data:
+            for index, jdocument in data.items():
                 if check_ping(self.config.ElasticIP, self.config.ElasticPort):
                     try:
                         # Decode json document and push it to elasticsearch
