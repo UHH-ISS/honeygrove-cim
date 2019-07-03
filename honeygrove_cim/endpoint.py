@@ -19,31 +19,32 @@ class Endpoint:
     log_queue = None
     file_queue = None
 
-    es_instance = None
+    elastic = None
 
     def __init__(self, cfg):
         self.config = cfg
 
         # Broker Configuration
         bcfg = broker.Configuration()
-        # - SSL
+        # (Optional) SSL Configuration
         if cfg.BrokerSSLCAFile:
-            bcfg.openssl_cafile = cfg.BrokerSSLCAFile # Path to CA file
+            bcfg.openssl_cafile = cfg.BrokerSSLCAFile  # Path to CA file
         if cfg.BrokerSSLCAPath:
-            bcfg.openssl_capath = cfg.BrokerSSLCAPath # Path to directory with CA files
+            bcfg.openssl_capath = cfg.BrokerSSLCAPath  # Path to directory with CA files
         if cfg.BrokerSSLCertificate:
-            bcfg.openssl_certificate = cfg.BrokerSSLCertificate # Own certificate
+            bcfg.openssl_certificate = cfg.BrokerSSLCertificate  # Own certificate
         if cfg.BrokerSSLKeyFile:
-            bcfg.openssl_key = cfg.BrokerSSLKeyFile # Own key
+            bcfg.openssl_key = cfg.BrokerSSLKeyFile  # Own key
 
         self.endpoint = broker.Endpoint(bcfg)
+
         # Status Subscriber
         self.status_queue = self.endpoint.make_status_subscriber(True)
         # Message Subscribers
         self.log_queue = self.endpoint.make_subscriber("logs")
         self.file_queue = self.endpoint.make_subscriber("files")
 
-        self.es_instance = get_instance(self.config.ElasticIP, self.config.ElasticPort)
+        self.elastic = get_instance(self.config.ElasticIP, self.config.ElasticPort)
 
     def ensure_elastic(self):
         ip = self.config.ElasticIP
@@ -115,31 +116,27 @@ class Endpoint:
                 path = os.path.join(self.config.MalwarePath, filename)
                 with open(path, 'wb') as fp:
                     fp.write(base64.b64decode(str(f)))
-                check_file_for_malware(path, self.es_instance)
+                check_file_for_malware(path, self.elastic)
 
     def process_logs(self, logs):
+        # Loop through broker messages
         for (topic, data) in logs:
-            # Do this to accept both lists and single values
-            data = _flatten([data])
-            for entry in data:
+            # Loop through message dictionary
+            for index, jdocument in data:
                 if check_ping(self.config.ElasticIP, self.config.ElasticPort):
                     try:
-                        document = json.loads(str(entry))
-                        # send logs into Elasticsearch
-                        month = datetime.utcnow().strftime("%Y-%m")
-                        indexname = "honeygrove-" + month
-                        self.es_instance.index(index=indexname, body=document)
+                        # Decode json document and push it to elasticsearch
+                        doc = json.loads(jdocument)
+                        self.elastic.index(index=index, body=doc)
 
                     except Exception as ex:
                         # XXX: Improve this
                         print("Exception encountered while adding log to elasticsearch: ", ex, flush=True)
-                        pass
                 else:
                     with open(self.config.LogPath, 'a') as fp:
                         # if connection to Elasticsearch is interrupted, cache logs to prevent data loss
                         print("[Endpoint] The logs will be saved at {}".format(self.config.LogPath))
-                        fp.write(str(entry))
-                        fp.write('\n')
+                        fp.write(jdocument + '\n')
 
 
 def _flatten(items):
