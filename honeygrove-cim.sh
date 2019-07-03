@@ -23,3 +23,4 @@ echo "[5] Starting Kibana and the honeygrove-adapter.."
 docker-compose start kibana adapter
 
 echo "[SUCCESS] Your honeygrove CIM is up and running!"
+echo "You may want to run ./prepare_elasticsearch.sh to setup your elasticsearch index template"
