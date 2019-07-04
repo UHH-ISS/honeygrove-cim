@@ -125,12 +125,10 @@ class Endpoint:
             for index, jdocument in data.items():
                 if check_ping(self.config.ElasticIP, self.config.ElasticPort):
                     try:
-                        # Decode json document and push it to elasticsearch
-                        doc = json.loads(jdocument)
-                        self.elastic.index(index=index, body=doc)
+                        # Push json document to Elasticsearch
+                        self.elastic.index(index=index, body=jdocument)
 
                     except Exception as ex:
-                        # XXX: Improve this
                         print("Exception encountered while adding log to elasticsearch: ", ex, flush=True)
                 else:
                     with open(self.config.LogPath, 'a') as fp:
