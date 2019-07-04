@@ -11,6 +11,7 @@ echo "[1] Rising the maximum memory that virtual machines are allowed to map.."
 sysctl -w vm.max_map_count=262144
 
 echo "[2] Preparing containers, network and volumes.."
+docker pull uhhiss/honeygrove-adapter:latest
 docker-compose up --build --no-start
 
 echo "[3] Starting Elasticsearch.."
