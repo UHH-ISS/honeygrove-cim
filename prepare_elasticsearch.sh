@@ -13,4 +13,4 @@ echo "Creating index template for elasticsearch instance@${ELASTIC_IP}:9200"
 curl -XPOST "${ELASTIC_IP}:9200/_template/honeygrove" --header "Content-Type: application/json" \
     -d @"index_template.json"
 
-echo "\nIndex Template successfully installed!"
+echo -e "\nIndex Template successfully installed!"
