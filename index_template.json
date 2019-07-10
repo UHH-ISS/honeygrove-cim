@@ -39,31 +39,6 @@
           "category": {
             "ignore_above": 1024,
             "type": "keyword"
-          },
-          "dataset": {
-            "ignore_above": 1024,
-            "type": "keyword"
-          },
-          "kind": {
-            "ignore_above": 1024,
-            "type": "keyword"
-          },
-          "module": {
-            "ignore_above": 1024,
-            "type": "keyword"
-          },
-          "original": {
-            "doc_values": false,
-            "ignore_above": 1024,
-            "index": false,
-            "type": "keyword"
-          },
-          "severity": {
-            "type": "long"
-          },
-          "type": {
-            "ignore_above": 1024,
-            "type": "keyword"
           }
         }
       },
@@ -142,39 +117,89 @@
               }
             }
           },
+          "file-upload": {
+            "properties": {
+              "service": {
+                "ignore_above": 64,
+                "type": "keyword"
+              },
+              "name": {
+                "ignore_above": 1024,
+                "type": "keyword"
+              },
+              "path": {
+                "ignore_above": 1024,
+                "type": "keyword"
+              },
+              "user": {
+                "ignore_above": 1024,
+                "type": "keyword"
+              }
+            }
+          },
+          "request": {
+            "properties": {
+              "service": {
+                "ignore_above": 64,
+                "type": "keyword"
+              },
+              "original": {
+                "ignore_above": 4096,
+                "type": "keyword"
+              },
+              "user": {
+                "ignore_above": 1024,
+                "type": "keyword"
+              },
+              "type": {
+                "ignore_above": 1024,
+                "type": "keyword"
+              }
+            }
+          },
+          "response": {
+            "properties": {
+              "service": {
+                "ignore_above": 64,
+                "type": "keyword"
+              },
+              "original": {
+                "ignore_above": 4096,
+                "type": "keyword"
+              },
+              "user": {
+                "ignore_above": 1024,
+                "type": "keyword"
+              },
+              "status": {
+                "ignore_above": 1024,
+                "type": "keyword"
+              }
+            }
+          },
           "scan": {
             "properties": {
               "port": {
                 "type": "long"
               },
               "type": {
-                  "ignore_above": 1024,
-                  "type": "keyword"
+                "ignore_above": 1024,
+                "type": "keyword"
+              }
+            }
+          },
+          "rate-limited": {
+            "properties": {
+              "service": {
+                "ignore_above": 1024,
+                "type": "keyword"
+              },
+              "ip": {
+                "type": "ip"
               }
             }
           }
         }
-      },
-      "filename": {
-        "type": "keyword"
-      },
-      "hash": {
-        "type": "keyword"
-      },
-      "infolink": {
-        "type": "keyword"
-      },
-      "percent": {
-        "type": "integer"
-      },
-      "request": {
-        "type": "keyword"
-      },
-      "request_type": {
-        "type": "keyword"
-      },
-      "response": {
-        "type": "keyword"
       }
     }
   }
